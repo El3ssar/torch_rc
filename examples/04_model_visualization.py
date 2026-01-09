@@ -53,10 +53,9 @@ model = ESNModel([feedback_input, driving_input], readout)
 print("\nText Summary:")
 model.summary()
 
-print("\nNote: Multi-input model visualization skipped")
-print("(torchvista has limitations with multi-input models)")
-print("Use model.summary() for text-based visualization")
-print("✓ Multi-input model created successfully")
+print("\nGenerating visualization...")
+model.plot_model()
+print("✓ Visualization generated (multi-input model)")
 
 # ============================================================================
 # Example 3: Deep ESN (Stacked Reservoirs)
