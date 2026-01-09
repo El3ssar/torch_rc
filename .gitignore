@@ -48,3 +48,8 @@ dmypy.json
 venv/
 env/
 ENV/
+
+# IDE and misc
+.cursor
+_bmad
+_bmad-output
