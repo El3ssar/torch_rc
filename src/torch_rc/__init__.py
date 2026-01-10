@@ -28,16 +28,17 @@ Basic Usage:
 >>> y = readout(h)
 """
 
-from . import composition, init, layers, models, utils
+from . import composition, init, layers, models, training, utils
 
 # Convenience imports for common use cases
 from .composition import ESNModel
 
 # Convenience submodule imports
 from .init import graphs, input_feedback, topology
-from .layers import ReadoutLayer, ReservoirLayer
+from .layers import ReservoirLayer
 from .layers.readouts import CGReadoutLayer
 from .models import classic_esn, headless_esn, linear_esn, ott_esn
+from .training import ESNTrainer
 
 __version__ = "0.1.0"
 
@@ -47,6 +48,7 @@ __all__ = [
     "init",
     "layers",
     "models",
+    "training",
     "utils",
     "__version__",
     # Convenience submodules
@@ -55,10 +57,11 @@ __all__ = [
     "input_feedback",
     # Core layers
     "ReservoirLayer",
-    "ReadoutLayer",
     "CGReadoutLayer",
     # Model composition
     "ESNModel",
+    # Training
+    "ESNTrainer",
     # Premade models
     "classic_esn",
     "ott_esn",
