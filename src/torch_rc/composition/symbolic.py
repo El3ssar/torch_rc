@@ -346,156 +346,159 @@ class ESNModel(ps.SymbolicModel):
 
         return output if return_outputs else None
 
+    @torch.no_grad()
     def forecast(
         self,
-        warmup_feedback: torch.Tensor,
-        forecast_steps: int,
-        warmup_driving: Optional[Dict[str, torch.Tensor]] = None,
-        forecast_driving: Optional[Dict[str, torch.Tensor]] = None,
-        forecast_initial_feedback: Optional[torch.Tensor] = None,
+        *warmup_inputs: torch.Tensor,
+        horizon: int,
+        forecast_drivers: Optional[Tuple[torch.Tensor, ...]] = None,
+        initial_feedback: Optional[torch.Tensor] = None,
         return_warmup: bool = False,
-        return_state_history: bool = False,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, Dict[str, torch.Tensor]]]:
-        """Two-step forecasting: teacher-forced warmup + autoregressive generation.
+    ) -> Union[torch.Tensor, Tuple[torch.Tensor, ...]]:
+        """Two-phase forecast: teacher-forced warmup + autoregressive generation.
 
-        This method implements the standard ESN forecasting workflow with automatic
-        optimization for simple architectures (~8,000 steps/sec).
+        Phase 1 (Warmup): Run model with provided inputs to synchronize
+        reservoir states with the input dynamics (Echo State Property).
+
+        Phase 2 (Forecast): Run autoregressive generation where the feedback
+        input comes from the model's own output, while driving inputs (if any)
+        are provided via forecast_drivers.
+
+        Convention: First input (warmup_inputs[0]) is always feedback.
+        Remaining inputs are driving inputs for the reservoirs.
+
+        For multi-output models, the first output tensor is used as feedback.
+        All outputs are stored and returned.
 
         Args:
-            warmup_feedback: Teacher-forced feedback (B, warmup_steps, feedback_dim)
-            forecast_steps: Number of autoregressive forecast steps
-            warmup_driving: Optional per-reservoir driving inputs during warmup
-            forecast_driving: Optional per-reservoir driving inputs during forecast
-            forecast_initial_feedback: Custom initial feedback (B, 1, feedback_dim)
-            return_warmup: Include warmup predictions in output
-            return_state_history: Track and return reservoir state trajectories
+            *warmup_inputs: Warmup tensors (feedback, driver1, driver2, ...)
+                            Each of shape (B, warmup_steps, features).
+            horizon: Number of autoregressive steps to generate.
+            forecast_drivers: Optional tuple of driving inputs for forecast phase.
+                              Each tensor should be (B, horizon, features).
+                              Required if model has driving inputs.
+            initial_feedback: Optional custom initial feedback (B, 1, feedback_dim).
+                              If None, uses last warmup output.
+            return_warmup: If True, prepend warmup outputs to result.
 
         Returns:
-            predictions: (B, forecast_steps, output_dim) or with warmup if requested
-            state_history: Optional dict of reservoir states if requested
+            Single-output model: Tensor (B, horizon, output_dim) or
+                                 (B, warmup_steps + horizon, output_dim) if return_warmup
+            Multi-output model: Tuple of tensors with same structure
 
         Example:
-            >>> model = ESNModel(inp, readout)
-            >>> warmup = torch.randn(4, 50, 1)
-            >>> predictions = model.forecast(warmup, forecast_steps=100)
+            >>> # Simple feedback-only model
+            >>> predictions = model.forecast(warmup_data, horizon=100)
+            >>>
+            >>> # Input-driven model
+            >>> predictions = model.forecast(
+            ...     warmup_feedback, warmup_driver,
+            ...     horizon=100,
+            ...     forecast_drivers=(future_driver,),
+            ... )
+
+        Raises:
+            ValueError: If forecast_drivers is required but not provided,
+                        or if dimensions don't match.
         """
+        if len(warmup_inputs) == 0:
+            raise ValueError("At least one warmup input (feedback) is required")
 
-        return self._forecast_functional(
-            warmup_feedback,
-            forecast_steps,
-            forecast_initial_feedback,
-            return_warmup,
-            return_state_history,
-        )
+        # Determine if model has driving inputs
+        num_drivers = len(warmup_inputs) - 1
+        has_drivers = num_drivers > 0
 
-    def _forecast_functional(
-        self,
-        warmup_feedback: torch.Tensor,
-        forecast_steps: int,
-        forecast_initial_feedback: Optional[torch.Tensor],
-        return_warmup: bool,
-        return_state_history: bool,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, Dict[str, torch.Tensor]]]:
-        """Fast functional forecast for simple ESN architectures."""
-        batch_size = warmup_feedback.shape[0]
-        warmup_steps = warmup_feedback.shape[1]
+        # Validate forecast_drivers
+        if has_drivers:
+            if forecast_drivers is None:
+                raise ValueError(
+                    f"Model has {num_drivers} driving input(s). "
+                    f"forecast_drivers must be provided for forecast phase."
+                )
+            if len(forecast_drivers) != num_drivers:
+                raise ValueError(
+                    f"Expected {num_drivers} forecast drivers, got {len(forecast_drivers)}"
+                )
+            for i, driver in enumerate(forecast_drivers):
+                if driver.shape[1] != horizon:
+                    raise ValueError(
+                        f"forecast_drivers[{i}] has {driver.shape[1]} steps, expected {horizon}"
+                    )
 
-        # Initialize state history if requested
-        state_history = {} if return_state_history else None
-        if return_state_history:
-            # Find reservoir layer
-            for name, module in self.named_modules():
-                if isinstance(module, ReservoirLayer):
-                    state_history[name] = []
+        batch_size = warmup_inputs[0].shape[0]
+        feedback_dim = warmup_inputs[0].shape[-1]
+        device = warmup_inputs[0].device
+        dtype = warmup_inputs[0].dtype
 
-        # Warmup phase
-        warmup_predictions = []
-        for t in range(warmup_steps):
-            output = self(warmup_feedback[:, t : t + 1, :])
-            if return_warmup:
-                warmup_predictions.append(output)
+        # Phase 1: Warmup - get all outputs to sync state AND get initial feedback
+        warmup_outputs = self.warmup(*warmup_inputs, return_outputs=True)
 
-            # Track states if requested
-            if return_state_history:
-                for name, module in self.named_modules():
-                    if isinstance(module, ReservoirLayer) and module.state is not None:
-                        state_history[name].append(module.state.clone())
+        # Determine output structure from model.output_shape
+        output_shape = self.output_shape
+        multi_output = isinstance(output_shape, tuple) and isinstance(output_shape[0], torch.Size)
 
-        # Get initial feedback for forecast
-        if forecast_initial_feedback is not None:
-            current_feedback = forecast_initial_feedback
+        # Validate feedback dimension matches output dimension
+        if multi_output:
+            feedback_output_dim = output_shape[0][-1]
         else:
-            current_feedback = output  # Last warmup output
+            feedback_output_dim = output_shape[-1]
 
-        # Get reservoir and readout for functional forecast
-        reservoir = None
-        readout = None
-        has_concat = False
+        if feedback_output_dim != feedback_dim:
+            raise ValueError(
+                f"Model design error: feedback input expects {feedback_dim} features, "
+                f"but model output (used as feedback) has {feedback_output_dim} features. "
+                f"For forecasting, the first output must match the feedback input dimension."
+            )
 
-        for module in self.modules():
-            if isinstance(module, ReservoirLayer):
-                reservoir = module
-            elif isinstance(module, ReadoutLayer):
-                readout = module
-            elif "Concat" in module.__class__.__name__:
-                has_concat = True
+        # Get initial feedback from last warmup output
+        if initial_feedback is not None:
+            current_feedback = initial_feedback
+        else:
+            if multi_output:
+                current_feedback = warmup_outputs[0][:, -1:, :]
+            else:
+                current_feedback = warmup_outputs[:, -1:, :]
 
-        # Get initial state
-        if reservoir.state is None:
-            initial_state = torch.zeros(
-                batch_size,
-                reservoir.reservoir_size,
-                dtype=warmup_feedback.dtype,
-                device=warmup_feedback.device,
+        # Pre-allocate forecast output storage based on model.output_shape
+        if multi_output:
+            forecast_outputs = tuple(
+                torch.empty(batch_size, horizon, shape[-1], dtype=dtype, device=device)
+                for shape in output_shape
             )
         else:
-            initial_state = reservoir.state
+            forecast_outputs = torch.empty(
+                batch_size, horizon, output_shape[-1], dtype=dtype, device=device
+            )
 
-        # Functional forecast
-        forecast_preds, final_state = functional_esn_forecast(
-            initial_feedback=current_feedback,
-            initial_reservoir_state=initial_state,
-            forecast_steps=forecast_steps,
-            weight_hh=reservoir.weight_hh,
-            weight_feedback=reservoir.weight_feedback,
-            readout_weight=readout.weight,
-            readout_bias=readout.bias
-            if readout.bias is not None
-            else torch.zeros(readout.out_features, device=readout.weight.device),
-            leak_rate=reservoir.leak_rate,
-            activation_fn=reservoir._activation_name,
-            concat_input=has_concat,
-        )
+        # Phase 2: Autoregressive forecast
+        for t in range(horizon):
+            if has_drivers:
+                driver_inputs_t = tuple(driver[:, t : t + 1, :] for driver in forecast_drivers)
+                step_inputs = (current_feedback,) + driver_inputs_t
+            else:
+                step_inputs = (current_feedback,)
 
-        # Update reservoir state
-        reservoir.state = final_state
+            output = self(*step_inputs)
 
-        # Track forecast states if requested
-        if return_state_history:
-            # We need to manually track states during forecast
-            # For now, just append final state for each forecast step
-            # This is a simplification - ideally we'd track during functional_esn_forecast
-            for name in state_history:
-                # Add forecast steps (simplified - all same final state)
-                for _ in range(forecast_steps):
-                    state_history[name].append(final_state.clone())
+            if multi_output:
+                for i, out in enumerate(output):
+                    forecast_outputs[i][:, t, :] = out.squeeze(1)
+                current_feedback = output[0]
+            else:
+                forecast_outputs[:, t, :] = output.squeeze(1)
+                current_feedback = output
 
         # Combine warmup and forecast if requested
         if return_warmup:
-            warmup_tensor = torch.cat(warmup_predictions, dim=1)
-            predictions = torch.cat([warmup_tensor, forecast_preds], dim=1)
+            if multi_output:
+                return tuple(
+                    torch.cat([warmup_outputs[i], forecast_outputs[i]], dim=1)
+                    for i in range(len(output_shape))
+                )
+            else:
+                return torch.cat([warmup_outputs, forecast_outputs], dim=1)
         else:
-            predictions = forecast_preds
-
-        # Return with state history if requested
-        if return_state_history:
-            # Convert lists to tensors
-            state_history_tensors = {
-                name: torch.stack(states, dim=1) for name, states in state_history.items()
-            }
-            return predictions, state_history_tensors
-        else:
-            return predictions
+            return forecast_outputs
 
 
 __all__ = ["Input", "ESNModel"]
