@@ -1,8 +1,8 @@
-"""Example demonstrating model visualization with pytorch_symbolic and torchvista.
+"""Example demonstrating model visualization with pytorch_symbolic and graphviz.
 
 This example shows how to visualize ESN models using:
 1. model.summary() - Text-based summary (like Keras)
-2. model.plot_model() - Interactive graph visualization
+2. model.plot_model() - Graph visualization using graphviz
 """
 
 import pytorch_symbolic as ps
@@ -10,6 +10,7 @@ import pytorch_symbolic as ps
 from torch_rc.composition import ESNModel
 from torch_rc.layers import ReservoirLayer
 from torch_rc.layers.readouts import CGReadoutLayer
+from torch_rc.layers.custom import Concatenate
 from torch_rc.models import classic_esn, ott_esn
 
 print("=" * 70)
@@ -33,7 +34,7 @@ model.summary()
 
 print("\nGenerating visualization...")
 model.plot_model()
-print("✓ Visualization generated (clean view with only layers)")
+print("✓ Visualization generated (feedback-only model)")
 
 # ============================================================================
 # Example 2: Input-Driven Model
@@ -78,9 +79,39 @@ model.plot_model()
 print("✓ Visualization generated")
 
 # ============================================================================
-# Example 4: Premade Models
+# Example 4: Complex Branching Architecture
 # ============================================================================
-print("\n\n4. Premade Models (Classic ESN)")
+print("\n\n4. Complex Branching Architecture")
+print("-" * 70)
+
+# Build a complex model with branching paths
+feedback = ps.Input(shape=(1, 1))
+inputs = ps.Input(shape=(1, 1))
+reservoir = ReservoirLayer(200, 1, input_size=1)(feedback, inputs)
+readout = CGReadoutLayer(reservoir.shape[-1], 2)(reservoir)
+
+inputs1 = ps.Input(shape=(1, 2))
+reservoir1 = ReservoirLayer(100, 2, input_size=2)(readout, inputs1)
+readout1 = CGReadoutLayer(reservoir1.shape[-1], 1)(reservoir1)
+
+reservoir2 = ReservoirLayer(150, 1, input_size=0)(readout1)
+readout2 = CGReadoutLayer(reservoir2.shape[-1], 1)(reservoir2)
+
+concat = Concatenate()(readout, readout2)
+
+model = ESNModel(inputs=(feedback, inputs, inputs1), outputs=concat)
+
+print("\nText Summary:")
+model.summary()
+
+print("\nGenerating visualization...")
+model.plot_model()
+print("✓ Visualization generated (complex branching model)")
+
+# ============================================================================
+# Example 5: Premade Models
+# ============================================================================
+print("\n\n5. Premade Models (Classic ESN)")
 print("-" * 70)
 
 model = classic_esn(reservoir_size=100, input_size=1, output_size=1)
@@ -93,24 +124,28 @@ model.plot_model()
 print("✓ Visualization generated")
 
 # ============================================================================
-# Example 5: Visualization Options
+# Example 6: Visualization Options
 # ============================================================================
-print("\n\n5. Visualization Options")
+print("\n\n6. Visualization Options")
 print("-" * 70)
 
 model = ott_esn(reservoir_size=100, input_size=1, output_size=1)
 
-print("\nOption 1: Clean view (default) - Only shows layers")
+print("\nOption 1: Default view (top-to-bottom)")
 model.plot_model()
-print("✓ Clean view generated")
+print("✓ Default view generated")
 
-print("\nOption 2: Detailed view - Shows all operations")
-model.plot_model(show_non_gradient_nodes=True)
-print("✓ Detailed view generated")
+print("\nOption 2: Left-to-right layout")
+model.plot_model(rankdir="LR")
+print("✓ Left-to-right view generated")
 
-print("\nOption 3: Module internals - Shows what's inside each layer")
-model.plot_model(collapse_modules_after_depth=1)
-print("✓ Module internals view generated")
+print("\nOption 3: Without shapes")
+model.plot_model(show_shapes=False)
+print("✓ View without shapes generated")
+
+print("\nOption 4: Save to file")
+model.plot_model(save_path="/tmp/model_output.svg")
+print("✓ Saved to /tmp/model_output.svg")
 
 # ============================================================================
 # Summary
@@ -120,14 +155,15 @@ print("SUMMARY")
 print("=" * 70)
 print("\nVisualization methods:")
 print("  1. model.summary()       - Text-based summary (pytorch_symbolic)")
-print("  2. model.plot_model()    - Interactive graph with torchvista")
+print("  2. model.plot_model()    - Graph visualization (graphviz)")
 print("\nKey features:")
-print("  - pytorch_symbolic: Keras-like model building")
-print("  - torchvista: Interactive visualization for notebooks")
-print("  - Works with premade models (classic_esn, ott_esn, etc.)")
-print("  - Clean view by default (only shows layers)")
+print("  - Uses symbolic graph structure for accurate visualization")
+print("  - Correctly shows complex branching architectures")
+print("  - Works with multi-input models")
+print("  - SVG/PNG/PDF export support")
 print("\nVisualization options:")
-print("  - plot_model()                              # Clean: only layers")
-print("  - plot_model(show_non_gradient_nodes=True)  # Detailed: all operations")
-print("  - plot_model(collapse_modules_after_depth=1) # Show module internals")
+print("  - plot_model()                     # Default: top-to-bottom with shapes")
+print("  - plot_model(rankdir='LR')         # Left-to-right layout")
+print("  - plot_model(show_shapes=False)    # Hide tensor shapes")
+print("  - plot_model(save_path='x.svg')    # Save to file")
 print("\n✅ All examples completed!")
