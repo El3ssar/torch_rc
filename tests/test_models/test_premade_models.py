@@ -16,8 +16,8 @@ class TestClassicESN:
         assert model is not None
         # Check that model has expected layers
         layer_names = [name for name, _ in model.named_modules()]
-        assert any('ReservoirLayer' in name for name in layer_names)
-        assert any('CGReadoutLayer' in name for name in layer_names)
+        assert any("ReservoirLayer" in name for name in layer_names)
+        assert any("CGReadoutLayer" in name for name in layer_names)
 
     def test_forward_pass(self):
         """Test forward pass through classic ESN."""
@@ -68,7 +68,7 @@ class TestClassicESN:
         model = classic_esn(reservoir_size=50, input_size=2, output_size=3)
 
         # Check for Concatenate layer
-        has_concat = any('Concatenate' in str(type(m)) for m in model.modules())
+        has_concat = any("Concatenate" in str(type(m)) for m in model.modules())
         assert has_concat, "Classic ESN should have Concatenate layer"
 
 
@@ -81,8 +81,8 @@ class TestOttESN:
 
         assert model is not None
         layer_names = [name for name, _ in model.named_modules()]
-        assert any('ReservoirLayer' in name for name in layer_names)
-        assert any('SelectiveExponentiation' in name for name in layer_names)
+        assert any("ReservoirLayer" in name for name in layer_names)
+        assert any("SelectiveExponentiation" in name for name in layer_names)
 
     def test_forward_pass(self):
         """Test forward pass through Ott ESN."""
@@ -115,7 +115,7 @@ class TestOttESN:
         model = ott_esn(reservoir_size=50, input_size=2, output_size=3)
 
         # Check for SelectiveExponentiation layer
-        has_augmentation = any('SelectiveExponentiation' in str(type(m)) for m in model.modules())
+        has_augmentation = any("SelectiveExponentiation" in str(type(m)) for m in model.modules())
         assert has_augmentation, "Ott ESN should have SelectiveExponentiation layer"
 
 
@@ -128,7 +128,7 @@ class TestHeadlessESN:
 
         assert model is not None
         layer_names = [name for name, _ in model.named_modules()]
-        assert any('ReservoirLayer' in name for name in layer_names)
+        assert any("ReservoirLayer" in name for name in layer_names)
 
     def test_forward_pass(self):
         """Test forward pass returns reservoir states."""
@@ -146,6 +146,7 @@ class TestHeadlessESN:
 
         # Check that no readout layer exists
         from torch_rc.layers.readouts import ReadoutLayer
+
         has_readout = any(isinstance(m, ReadoutLayer) for m in model.modules())
         assert not has_readout, "Headless ESN should not have readout layer"
 
@@ -175,7 +176,7 @@ class TestLinearESN:
 
         assert model is not None
         layer_names = [name for name, _ in model.named_modules()]
-        assert any('ReservoirLayer' in name for name in layer_names)
+        assert any("ReservoirLayer" in name for name in layer_names)
 
     def test_forward_pass(self):
         """Test forward pass returns reservoir states."""
@@ -192,6 +193,7 @@ class TestLinearESN:
 
         # Find reservoir layer and check activation
         from torch_rc.layers import ReservoirLayer
+
         reservoir = None
         for module in model.modules():
             if isinstance(module, ReservoirLayer):
@@ -217,6 +219,7 @@ class TestLinearESN:
 
         # Verify activation is still identity
         from torch_rc.layers import ReservoirLayer
+
         reservoir = None
         for module in model.modules():
             if isinstance(module, ReservoirLayer):
@@ -240,7 +243,7 @@ class TestModelComparison:
         assert classic is not None and ott is not None
 
         # Ott should have SelectiveExponentiation
-        ott_has_aug = any('SelectiveExponentiation' in str(type(m)) for m in ott.modules())
+        ott_has_aug = any("SelectiveExponentiation" in str(type(m)) for m in ott.modules())
         assert ott_has_aug
 
     def test_headless_vs_linear_dynamics(self):

@@ -9,7 +9,9 @@ from .base import InputFeedbackInitializer, _resolve_shape
 from .registry import register_input_feedback
 
 
-@register_input_feedback("ring_window", c=None, window=None, taper="flat", signed="allpos", gain=1.0)
+@register_input_feedback(
+    "ring_window", c=None, window=None, taper="flat", signed="allpos", gain=1.0
+)
 class RingWindowInputInitializer(InputFeedbackInitializer):
     """Deterministic windowed input initializer for ring-based topologies.
 

@@ -45,7 +45,7 @@ def linear_esn(
     res_config["feedback_size"] = input_size
     res_config["input_size"] = 0
     res_config["reservoir_size"] = res_config.get("reservoir_size", reservoir_size)
-    
+
     # Force linear activation (architecture requirement)
     res_config["activation"] = "identity"
 

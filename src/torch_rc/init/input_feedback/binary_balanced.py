@@ -10,7 +10,9 @@ from .base import InputFeedbackInitializer, _resolve_shape
 from .registry import register_input_feedback
 
 
-@register_input_feedback("binary_balanced", input_scaling=None, balance_global=True, step=None, seed=None)
+@register_input_feedback(
+    "binary_balanced", input_scaling=None, balance_global=True, step=None, seed=None
+)
 class BinaryBalancedInitializer(InputFeedbackInitializer):
     """Deterministic binary balanced initializer using Walsh-Hadamard structure.
 

@@ -70,9 +70,7 @@ def regular_graph(
             weight = rng.choice([-1, 1]) if random_weights else (-1) ** (i + neighbor)
             G.add_edge(i, neighbor, weight=weight)
             if directed:
-                weight = (
-                    rng.choice([-1, 1]) if random_weights else (-1) ** (i + neighbor)
-                )
+                weight = rng.choice([-1, 1]) if random_weights else (-1) ** (i + neighbor)
                 G.add_edge(neighbor, i, weight=weight)
 
     if self_loops:

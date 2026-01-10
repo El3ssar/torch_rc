@@ -4,7 +4,7 @@ This module provides ReservoirLayer, a stateful recurrent neural network layer
 with graph-based weight initialization for Echo State Networks (ESN).
 """
 
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 import torch.nn as nn
