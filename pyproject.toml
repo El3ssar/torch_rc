@@ -28,6 +28,7 @@ dependencies = [
     "torch>=2.9.1",
     "numpy>=2.4.0",
     "networkx>=3.0",
+    "pytorch-symbolic>=1.1.1",
     "graphviz>=0.21",
 ]
 

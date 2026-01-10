@@ -705,6 +705,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pytorch-symbolic"
+version = "1.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "torch" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/df/f3/420abaf197580dfe2ef1843e52378c7c6ec3481fd489f3c242667a8e10e6/pytorch_symbolic-1.1.1.tar.gz", hash = "sha256:bbaed85c23e24c5e8414d284efd7c842f8cb6b8c98525b8a942dffc9e1e606b1", size = 988702, upload-time = "2025-03-15T17:00:18.583Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/39/e4/b3b204d4b0ff66e4e07c5ec874dd218f81ac936f5bbb05f63ec5ff1a80ab/pytorch_symbolic-1.1.1-py3-none-any.whl", hash = "sha256:189c575350c2977d3213fc2efd7123b36d0fa542ad6369c0777fed713215fad5", size = 23403, upload-time = "2025-03-15T17:00:16.466Z" },
+]
+
+[[package]]
 name = "ruff"
 version = "0.14.10"
 source = { registry = "https://pypi.org/simple" }
@@ -864,6 +876,7 @@ dependencies = [
     { name = "graphviz" },
     { name = "networkx" },
     { name = "numpy" },
+    { name = "pytorch-symbolic" },
     { name = "torch" },
 ]
 
@@ -885,6 +898,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.4.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.2" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
+    { name = "pytorch-symbolic", specifier = ">=1.1.1" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.14.10" },
     { name = "torch", specifier = ">=2.9.1" },
 ]
