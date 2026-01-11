@@ -4,8 +4,6 @@ Removes outliers from ensembles and computes the mean, useful for denoising
 temporal data by filtering extreme values.
 """
 
-from typing import List, Union
-
 import torch
 import torch.nn as nn
 
@@ -61,7 +59,7 @@ class OutliersFilteredMean(nn.Module):
         if self.method not in ["z_score", "iqr"]:
             raise ValueError(f"Unsupported method: {self.method}. Choose 'z_score' or 'iqr'.")
 
-    def forward(self, input: Union[torch.Tensor, List[torch.Tensor]]) -> torch.Tensor:
+    def forward(self, input: torch.Tensor | list[torch.Tensor]) -> torch.Tensor:
         """Remove outliers and compute mean.
 
         Args:

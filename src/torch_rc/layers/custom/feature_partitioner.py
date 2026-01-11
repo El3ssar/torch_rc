@@ -4,8 +4,6 @@ Splits the feature dimension into multiple overlapping slices with optional
 circular wrapping at the boundaries.
 """
 
-from typing import List
-
 import torch
 import torch.nn as nn
 
@@ -60,7 +58,7 @@ class FeaturePartitioner(nn.Module):
         self.partitions = partitions
         self.overlap = overlap
 
-    def forward(self, input: torch.Tensor) -> List[torch.Tensor]:
+    def forward(self, input: torch.Tensor) -> list[torch.Tensor]:
         """Split the feature dimension into overlapping partitions with circular wrapping.
 
         Args:

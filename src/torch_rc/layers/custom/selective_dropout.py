@@ -4,7 +4,7 @@ Zeros out specific features based on a fixed mask, useful for analyzing
 how shutting off specific neurons affects model predictions.
 """
 
-from typing import Sequence, Union
+from typing import Sequence
 
 import numpy as np
 import torch
@@ -37,7 +37,7 @@ class SelectiveDropout(nn.Module):
         >>> # Features at indices 1 and 3 are zeroed out
     """
 
-    def __init__(self, mask: Union[Sequence[bool], np.ndarray, torch.Tensor]) -> None:
+    def __init__(self, mask: Sequence[bool] | np.ndarray | torch.Tensor) -> None:
         """Initialize the SelectiveDropout layer.
 
         Args:

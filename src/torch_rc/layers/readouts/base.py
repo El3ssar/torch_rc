@@ -4,8 +4,6 @@ This module provides ReadoutLayer, a per-timestep linear layer with support
 for classical ESN training (ridge regression fitting).
 """
 
-from typing import Optional
-
 import torch
 import torch.nn as nn
 
@@ -49,7 +47,7 @@ class ReadoutLayer(nn.Linear):
         in_features: int,
         out_features: int,
         bias: bool = True,
-        name: Optional[str] = None,
+        name: str | None = None,
         trainable: bool = False,
     ) -> None:
         """Initialize the ReadoutLayer.
@@ -80,7 +78,7 @@ class ReadoutLayer(nn.Linear):
             param.requires_grad_(False)
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         """Get the readout name.
 
         Returns:

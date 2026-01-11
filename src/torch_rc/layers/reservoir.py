@@ -100,7 +100,7 @@ class ReservoirLayer(nn.Module):
         self.activation_fn = self._get_activation(activation)
 
         # Internal state (initialized on first forward pass)
-        self.state: Optional[torch.Tensor] = None
+        self.state: torch.Tensor | None = None
 
         # Store bias flag before initialization
         self._bias = bias
@@ -374,7 +374,7 @@ class ReservoirLayer(nn.Module):
 
         return outputs
 
-    def reset_state(self, batch_size: Optional[int] = None) -> None:
+    def reset_state(self, batch_size: int | None = None) -> None:
         """Reset internal state to zero.
 
         Args:
@@ -403,7 +403,7 @@ class ReservoirLayer(nn.Module):
             )
         self.state = state.clone()
 
-    def get_state(self) -> Optional[torch.Tensor]:
+    def get_state(self) -> torch.Tensor | None:
         """Get current internal state.
 
         Returns:

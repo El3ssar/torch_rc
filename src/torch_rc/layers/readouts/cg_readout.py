@@ -1,7 +1,5 @@
 """Conjugate Gradient ReadoutLayer for ridge regression fitting."""
 
-from typing import Optional, Tuple
-
 import torch
 
 from .base import ReadoutLayer
@@ -47,7 +45,7 @@ class CGReadoutLayer(ReadoutLayer):
         in_features: int,
         out_features: int,
         bias: bool = True,
-        name: Optional[str] = None,
+        name: str | None = None,
         trainable: bool = False,
         max_iter: int = 100,
         tol: float = 1e-5,
@@ -75,7 +73,7 @@ class CGReadoutLayer(ReadoutLayer):
         X: torch.Tensor,
         y: torch.Tensor,
         alpha: float,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Solve Ridge Regression using Conjugate Gradient for multiple outputs.
 
         This method solves the regularized least squares problem:
