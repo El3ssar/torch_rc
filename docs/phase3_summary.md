@@ -96,7 +96,7 @@ Mixed precision (FP16/BF16) is fully supported.
 
 ```python
 # Get all reservoir states
-states = model.get_reservoir_states()  # Dict[str, Tensor]
+states = model.get_reservoir_states()  # dict[str, torch.Tensor]
 
 # Set reservoir states
 model.set_reservoir_states(states)
@@ -160,14 +160,14 @@ class ModelBuilder:
     def add(
         self,
         module: nn.Module,
-        inputs: Union[str, List[str]],
-        name: Optional[str] = None
+        inputs: str | list[str],
+        name: str | None = None
     ) -> str:
         """Add a computation node."""
 
     def build(
         self,
-        outputs: Optional[Union[str, List[str]]] = None
+        outputs: str | list[str] | None = None
     ) -> ESNModel:
         """Build the model."""
 ```
@@ -175,25 +175,25 @@ class ModelBuilder:
 ### ESNModel
 
 ```python
-class ESNModel(nn.Module):
-    def forward(self, inputs: Dict[str, Tensor]) -> Union[Tensor, Dict[str, Tensor]]:
+class ESNModel(ps.SymbolicModel):
+    def forward(self, inputs: dict[str, torch.Tensor]) -> torch.Tensor | dict[str, torch.Tensor]:
         """Execute forward pass."""
 
-    def reset_reservoirs(self, batch_size: Optional[int] = None) -> None:
+    def reset_reservoirs(self, batch_size: int | None = None) -> None:
         """Reset all reservoir states."""
 
-    def get_reservoir_states(self) -> Dict[str, Tensor]:
+    def get_reservoir_states(self) -> dict[str, torch.Tensor]:
         """Get current reservoir states."""
 
-    def set_reservoir_states(self, states: Dict[str, Tensor]) -> None:
+    def set_reservoir_states(self, states: dict[str, torch.Tensor]) -> None:
         """Set reservoir states."""
 
     @property
-    def input_names(self) -> List[str]:
+    def input_names(self) -> list[str]:
         """Get input names."""
 
     @property
-    def output_names(self) -> List[str]:
+    def output_names(self) -> list[str]:
         """Get output names."""
 ```
 

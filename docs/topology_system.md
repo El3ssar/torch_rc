@@ -288,7 +288,7 @@ Key parameters to tune:
 Your graph function must follow this signature:
 
 ```python
-def my_graph(n: int, *args, **kwargs) -> Union[nx.Graph, nx.DiGraph]:
+def my_graph(n: int, *args, **kwargs) -> nx.Graph | nx.DiGraph:
     """Generate a graph with n nodes."""
     G = nx.DiGraph()
     G.add_nodes_from(range(n))
