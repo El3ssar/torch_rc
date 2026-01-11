@@ -5,7 +5,7 @@ used in reservoir input and feedback connections.
 """
 
 import inspect
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union, get_args, get_origin
 
 from .base import InputFeedbackInitializer
 
@@ -145,33 +145,42 @@ def show_input_initializers(name: Optional[str] = None) -> Union[List[str], Dict
 
     init_class, default_kwargs = _INPUT_FEEDBACK_REGISTRY[name]
 
-    # Extract __init__ signature (skip 'self')
     sig = inspect.signature(init_class.__init__)
-    parameters = {}
+    types: Dict[str, str] = {}
+
     for param_name, param in sig.parameters.items():
         if param_name == "self":
             continue
 
-        param_info: Dict[str, Any] = {}
-
-        # Get type annotation if available
-        if param.annotation != inspect.Parameter.empty:
-            param_info["type"] = getattr(param.annotation, "__name__", str(param.annotation))
+        if param.annotation is not inspect.Parameter.empty:
+            origin = get_origin(param.annotation)
+            if origin is None:
+                types[param_name] = param.annotation.__name__
+            else:
+                args = get_args(param.annotation)
+                types[param_name] = " | ".join(a.__name__ for a in args)
         else:
-            param_info["type"] = "Any"
+            types[param_name] = "Any"
 
-        # Get default value
-        if param.default != inspect.Parameter.empty:
-            param_info["default"] = param.default
-        elif param_name in default_kwargs:
-            param_info["default"] = default_kwargs[param_name]
-        else:
-            param_info["default"] = "<required>"
-
-        parameters[param_name] = param_info
-
-    return {
+    info = {
         "name": name,
-        "defaults": default_kwargs,
-        "parameters": parameters,
+        "parameters": {
+            k: {
+                "type": types.get(k, "Any"),
+                "default": (
+                    sig.parameters[k].default
+                    if sig.parameters[k].default is not inspect.Parameter.empty
+                    else default_kwargs.get(k, "<required>")
+                ),
+            }
+            for k in sorted(set(types) | set(default_kwargs))
+        },
     }
+
+    return _format_init(info)
+
+def _format_init(info: dict) -> str:
+    lines = [f"\nInitializer: {info['name']}", "", "Parameters:"]
+    for name, meta in info["parameters"].items():
+        lines.append(f"  - {name}: type={meta['type']}, default={meta['default']}")
+    print("\n".join(lines))

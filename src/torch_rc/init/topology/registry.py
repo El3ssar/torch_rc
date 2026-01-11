@@ -9,7 +9,7 @@ The registry supports two families of initializers:
 """
 
 import inspect
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, get_args, get_origin
 
 from .base import GraphTopology
 
@@ -149,28 +149,37 @@ def show_topologies(name: Optional[str] = None) -> Union[List[str], Dict[str, An
 
     # Extract function signature
     sig = inspect.signature(graph_func)
-    parameters = {}
+    types = {}
     for param_name, param in sig.parameters.items():
-        param_info: Dict[str, Any] = {}
+
+        if param_name == "n":
+            continue
 
         # Get type annotation if available
-        if param.annotation != inspect.Parameter.empty:
-            param_info["type"] = getattr(param.annotation, "__name__", str(param.annotation))
+        if param.annotation is not inspect.Parameter.empty:
+            origin = get_origin(param.annotation)
+            if origin is None:
+                types[param_name] = param.annotation.__name__
+            else:
+                args = get_args(param.annotation)
+                types[param_name] = " | ".join(a.__name__ for a in args)
         else:
-            param_info["type"] = "Any"
+            types[param_name] = "Any"
 
-        # Get default value
-        if param.default != inspect.Parameter.empty:
-            param_info["default"] = param.default
-        elif param_name in default_kwargs:
-            param_info["default"] = default_kwargs[param_name]
-        else:
-            param_info["default"] = "<required>"
-
-        parameters[param_name] = param_info
-
-    return {
+    info = {
         "name": name,
-        "defaults": default_kwargs,
-        "parameters": parameters,
+        "parameters": {
+            k: {
+                "type": types.get(k, "Any"),
+                "default": default_kwargs.get(k, "<required>"),
+            }
+            for k in sorted(set(types) | set(default_kwargs))
+        },
     }
+    return _format_topology(info)
+
+def _format_topology(info: dict) -> str:
+    lines = [f"\nTopology: {info['name']}", "", "Parameters:"]
+    for name, meta in info["parameters"].items():
+        lines.append(f"  - {name}: type={meta['type']}, default={meta['default']}")
+    print("\n".join(lines))
