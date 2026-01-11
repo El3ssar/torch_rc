@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from torch_rc.init.graphs import erdos_renyi_graph, ring_chord_graph
-from torch_rc.init.topology import GraphTopology, get_topology, list_topologies
+from torch_rc.init.topology import GraphTopology, get_topology, show_topologies
 
 
 class TestGraphTopology:
@@ -61,14 +61,25 @@ class TestGraphTopology:
 class TestTopologyRegistry:
     """Tests for topology registry."""
 
-    def test_list_topologies(self):
+    def test_show_topologies_list(self):
         """Test listing available topologies."""
-        topologies = list_topologies()
+        topologies = show_topologies()
 
         assert isinstance(topologies, list)
         assert len(topologies) > 0
         assert "erdos_renyi" in topologies
         assert "watts_strogatz" in topologies
+
+    def test_show_topologies_details(self):
+        """Test showing details for a specific topology."""
+        details = show_topologies("erdos_renyi")
+
+        assert isinstance(details, dict)
+        assert details["name"] == "erdos_renyi"
+        assert "defaults" in details
+        assert "parameters" in details
+        assert "n" in details["parameters"]
+        assert "p" in details["parameters"]
 
     def test_get_topology_by_name(self):
         """Test getting topology by name."""
