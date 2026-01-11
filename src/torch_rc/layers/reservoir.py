@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..init.input_feedback import InputFeedbackInitializer
+from ..init.input_feedback import InputFeedbackInitializer, get_input_feedback
 from ..init.topology import TopologyInitializer, get_topology
 
 
@@ -79,8 +79,8 @@ class ReservoirLayer(nn.Module):
         activation: str = "tanh",
         leak_rate: float = 1.0,
         trainable: bool = False,
-        feedback_initializer: InputFeedbackInitializer | None = None,
-        input_initializer: InputFeedbackInitializer | None = None,
+        feedback_initializer: InputFeedbackInitializer | str | None = None,
+        input_initializer: InputFeedbackInitializer | str | None = None,
         topology: str | TopologyInitializer | None = None,
     ) -> None:
         """Initialize the ReservoirLayer."""
@@ -184,8 +184,16 @@ class ReservoirLayer(nn.Module):
         self.weight_feedback = nn.Parameter(torch.empty(self.reservoir_size, self.feedback_size))
 
         if self.feedback_initializer is not None:
-            # Use custom initializer
-            self.feedback_initializer.initialize(self.weight_feedback)
+            if isinstance(self.feedback_initializer, str):
+                self.feedback_initializer = get_input_feedback(self.feedback_initializer)
+            elif isinstance(self.feedback_initializer, InputFeedbackInitializer):
+                # Use custom initializer
+                self.feedback_initializer.initialize(self.weight_feedback)
+            else:
+                raise TypeError(
+                    f"feedback_initializer must be a string or InputFeedbackInitializer, "
+                    f"got {type(self.feedback_initializer).__name__}"
+                )
         else:
             # Default: uniform random scaled by feedback_scaling
             nn.init.uniform_(self.weight_feedback, -self.feedback_scaling, self.feedback_scaling)
@@ -200,8 +208,16 @@ class ReservoirLayer(nn.Module):
         self.weight_input = nn.Parameter(torch.empty(self.reservoir_size, self.input_size))
 
         if self.input_initializer is not None:
-            # Use custom initializer
-            self.input_initializer.initialize(self.weight_input)
+            if isinstance(self.input_initializer, str):
+                self.input_initializer = get_input_feedback(self.input_initializer)
+            elif isinstance(self.input_initializer, InputFeedbackInitializer):
+                # Use custom initializer
+                self.input_initializer.initialize(self.weight_input)
+            else:
+                raise TypeError(
+                    f"input_initializer must be a string or InputFeedbackInitializer, "
+                    f"got {type(self.input_initializer).__name__}"
+                )
         else:
             # Default: uniform random scaled by input_scaling
             nn.init.uniform_(self.weight_input, -self.input_scaling, self.input_scaling)
