@@ -22,8 +22,10 @@ Example:
     >>> predictions = model.forecast(warmup_data, forecast_steps=100)
 """
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
 
 import pytorch_symbolic as ps
 import torch
@@ -55,7 +57,7 @@ class ESNModel(ps.SymbolicModel):
             if isinstance(module, ReservoirLayer):
                 module.reset_state()
 
-    def get_reservoir_states(self) -> Dict[str, torch.Tensor]:
+    def get_reservoir_states(self) -> dict[str, torch.Tensor]:
         """Get current states of all reservoir layers.
 
         Returns:
@@ -67,7 +69,7 @@ class ESNModel(ps.SymbolicModel):
                 states[name] = module.state.clone()
         return states
 
-    def set_reservoir_states(self, states: Dict[str, torch.Tensor]) -> None:
+    def set_reservoir_states(self, states: dict[str, torch.Tensor]) -> None:
         """Set states of reservoir layers.
 
         Args:
@@ -79,7 +81,7 @@ class ESNModel(ps.SymbolicModel):
 
     def save(
         self,
-        path: Union[str, Path],
+        path: str | Path,
         include_states: bool = False,
         **metadata: Any,
     ) -> None:
@@ -107,7 +109,7 @@ class ESNModel(ps.SymbolicModel):
 
     def load(
         self,
-        path: Union[str, Path],
+        path: str | Path,
         strict: bool = True,
         load_states: bool = False,
     ) -> None:
@@ -136,8 +138,8 @@ class ESNModel(ps.SymbolicModel):
     @classmethod
     def load_from_file(
         cls,
-        path: Union[str, Path],
-        model: Optional["ESNModel"] = None,
+        path: str | Path,
+        model: "ESNModel" | None = None,
         strict: bool = True,
         load_states: bool = False,
     ) -> "ESNModel":
@@ -163,7 +165,7 @@ class ESNModel(ps.SymbolicModel):
 
     def plot_model(
         self,
-        save_path: Optional[Union[str, Path]] = None,
+        save_path: str | Path | None = None,
         format: str = "svg",
         show_shapes: bool = True,
         rankdir: str = "TB",
@@ -317,7 +319,7 @@ class ESNModel(ps.SymbolicModel):
         self,
         *inputs: torch.Tensor,
         return_outputs: bool = False,
-    ) -> Optional[torch.Tensor]:
+    ) -> torch.Tensor | None:
         """Teacher-forced warmup to synchronize reservoir states.
 
         Runs the model with provided inputs, updating internal reservoir states
@@ -351,10 +353,10 @@ class ESNModel(ps.SymbolicModel):
         self,
         *warmup_inputs: torch.Tensor,
         horizon: int,
-        forecast_drivers: Optional[Tuple[torch.Tensor, ...]] = None,
-        initial_feedback: Optional[torch.Tensor] = None,
+        forecast_drivers: tuple[torch.Tensor, ...] | None = None,
+        initial_feedback: torch.Tensor | None = None,
         return_warmup: bool = False,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, ...]]:
+    ) -> torch.Tensor | tuple[torch.Tensor, ...]:
         """Two-phase forecast: teacher-forced warmup + autoregressive generation.
 
         Phase 1 (Warmup): Run model with provided inputs to synchronize
