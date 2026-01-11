@@ -23,6 +23,7 @@ from .erdos_renyi import erdos_renyi_graph
 from .kleinberg_small_world import kleinberg_small_world_graph
 from .multi_cycle import multi_cycle_graph
 from .newman_watts_strogatz import newman_watts_strogatz_graph
+from .random import random_graph
 from .regular import regular_graph
 from .ring_chord import ring_chord_graph
 from .simple_cycle_jumps import simple_cycle_jumps_graph
@@ -41,6 +42,7 @@ __all__ = [
     "kleinberg_small_world_graph",
     "multi_cycle_graph",
     "newman_watts_strogatz_graph",
+    "random_graph",
     "regular_graph",
     "ring_chord_graph",
     "simple_cycle_jumps_graph",

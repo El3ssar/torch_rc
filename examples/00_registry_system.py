@@ -14,15 +14,13 @@ import torch
 from torch_rc.init.input_feedback import (
     InputFeedbackInitializer,
     get_input_feedback,
-    list_input_feedback_initializers,
     register_input_feedback,
-    register_input_feedback_class,
+    show_input_initializers,
 )
 from torch_rc.init.topology import (
     get_topology,
-    list_topologies,
     register_graph_topology,
-    register_topology,
+    show_topologies,
 )
 
 
@@ -38,7 +36,7 @@ def main():
     print("-" * 80)
 
     # List all available topologies
-    print(f"Available topologies: {', '.join(list_topologies())}")
+    print(f"Available topologies: {', '.join(show_topologies())}")
 
     # Get a topology by name
     topology = get_topology("erdos_renyi", p=0.15, seed=42)
@@ -59,7 +57,7 @@ def main():
     print("-" * 80)
 
     # List all available initializers
-    print(f"Available initializers: {', '.join(list_input_feedback_initializers())}")
+    print(f"Available initializers: {', '.join(show_input_initializers())}")
 
     # Get an initializer by name
     input_init = get_input_feedback("binary_balanced", input_scaling=0.5)
@@ -143,44 +141,9 @@ def main():
     )
 
     # =========================================================================
-    # Part 4: Registering Custom Graph Topologies (Programmatic Style)
+    # Part 4: Custom Input/Feedback Initializers (Decorator Style)
     # =========================================================================
-    print("\n[4] CUSTOM GRAPH TOPOLOGY (PROGRAMMATIC)")
-    print("-" * 80)
-
-    # Define a custom graph function
-    def star_graph(n, directed=True, seed=None):
-        """Create a star graph with one hub connected to all other nodes."""
-        G = nx.DiGraph() if directed else nx.Graph()
-
-        # Add hub node (0) and leaf nodes (1 to n-1)
-        G.add_node(0)
-        for i in range(1, n):
-            G.add_node(i)
-            if directed:
-                G.add_edge(0, i, weight=1.0)  # Hub to leaves
-                G.add_edge(i, 0, weight=0.5)  # Leaves back to hub
-            else:
-                G.add_edge(0, i, weight=1.0)
-
-        return G
-
-    # Register programmatically
-    register_topology("star", star_graph, {"directed": True})
-    print("Registered 'star' topology")
-
-    star_topology = get_topology("star")
-    weight = torch.empty(50, 50)
-    star_topology.initialize(weight, spectral_radius=0.9)
-    print(
-        f"Initialized with star topology: shape={weight.shape}, "
-        f"nonzero={weight.count_nonzero().item()}/{weight.numel()}"
-    )
-
-    # =========================================================================
-    # Part 5: Custom Input/Feedback Initializers (Decorator Style)
-    # =========================================================================
-    print("\n[5] CUSTOM INPUT/FEEDBACK INITIALIZER (DECORATOR)")
+    print("\n[4] CUSTOM INPUT/FEEDBACK INITIALIZER (DECORATOR)")
     print("-" * 80)
 
     # Define and register a custom initializer using decorator
@@ -233,54 +196,18 @@ def main():
         f"mean={input_weight.mean():.4f}, std={input_weight.std():.4f}"
     )
 
-    # =========================================================================
-    # Part 6: Custom Input/Feedback Initializers (Programmatic Style)
-    # =========================================================================
-    print("\n[6] CUSTOM INPUT/FEEDBACK INITIALIZER (PROGRAMMATIC)")
-    print("-" * 80)
-
-    # Define a custom initializer class
-    class TriangularInitializer(InputFeedbackInitializer):
-        """Initialize weights with lower triangular structure."""
-
-        def __init__(self, scaling=1.0):
-            self.scaling = scaling
-
-        def initialize(self, weight, **kwargs):
-            """Initialize weight tensor with lower triangular structure."""
-            rows, cols = weight.shape
-            for i in range(rows):
-                for j in range(cols):
-                    if i >= j:
-                        weight[i, j] = self.scaling * (1.0 + i - j) / (1.0 + i)
-                    else:
-                        weight[i, j] = 0.0
-            return weight
-
-        def __repr__(self):
-            return f"TriangularInitializer(scaling={self.scaling})"
-
-    # Register programmatically
-    register_input_feedback_class("triangular", TriangularInitializer, {"scaling": 1.0})
-    print("Registered 'triangular' initializer")
-
-    tri_init = get_input_feedback("triangular", scaling=0.5)
-    input_weight = torch.empty(10, 5)
-    tri_init.initialize(input_weight)
-    print(f"Initialized with triangular initializer: shape={input_weight.shape}")
-    print(f"First few rows:\n{input_weight[:5, :]}")
 
     # =========================================================================
     # Summary
     # =========================================================================
     print("\n[7] SUMMARY")
     print("-" * 80)
-    print(f"Total registered topologies: {len(list_topologies())}")
-    print(f"Total registered initializers: {len(list_input_feedback_initializers())}")
-    print("\nNew topologies:", [t for t in list_topologies() if t in ["custom_grid", "star"]])
+    print(f"Total registered topologies: {len(show_topologies())}")
+    print(f"Total registered initializers: {len(show_input_initializers())}")
+    print("\nNew topologies:", [t for t in show_topologies() if t in ["custom_grid", "star"]])
     print(
         "New initializers:",
-        [i for i in list_input_feedback_initializers() if i in ["gaussian_sparse", "triangular"]],
+        [i for i in show_input_initializers() if i in ["gaussian_sparse", "triangular"]],
     )
 
     print("\n" + "=" * 80)

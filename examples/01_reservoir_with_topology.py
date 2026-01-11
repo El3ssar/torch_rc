@@ -7,7 +7,7 @@ to initialize the recurrent weight matrix of a ReservoirLayer.
 import torch
 
 from torch_rc.init.graphs import erdos_renyi_graph
-from torch_rc.init.topology import GraphTopology, get_topology, list_topologies
+from torch_rc.init.topology import GraphTopology, get_topology, show_topologies
 from torch_rc.layers import ReservoirLayer
 
 # Example 1: Using a pre-registered topology by name
@@ -43,7 +43,7 @@ print("Example 2: Custom topology parameters")
 print("=" * 60)
 
 # Get available topologies
-print(f"Available topologies: {list_topologies()}")
+print(f"Available topologies: {show_topologies()}")
 
 # Use Watts-Strogatz small-world topology with custom parameters
 reservoir2 = ReservoirLayer(
