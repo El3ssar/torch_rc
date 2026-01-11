@@ -72,9 +72,7 @@ class ReservoirLayer(nn.Module):
         reservoir_size: int,
         feedback_size: int,
         input_size: int | None = None,
-        spectral_radius: float = 0.9,
-        feedback_scaling: float = 1.0,
-        input_scaling: float = 1.0,
+        spectral_radius: float | None = None,
         bias: bool = True,
         activation: str = "tanh",
         leak_rate: float = 1.0,
@@ -92,8 +90,6 @@ class ReservoirLayer(nn.Module):
         self.input_size = input_size
         self.topology = topology
         self.spectral_radius = spectral_radius
-        self.feedback_scaling = feedback_scaling
-        self.input_scaling = input_scaling
         self.feedback_initializer = feedback_initializer
         self.input_initializer = input_initializer
         self.leak_rate = leak_rate
@@ -101,7 +97,7 @@ class ReservoirLayer(nn.Module):
 
         # Activation function
         self._activation_name = activation  # Store name for functional forecast
-        self.activation = self._get_activation(activation)
+        self.activation_fn = self._get_activation(activation)
 
         # Internal state (initialized on first forward pass)
         self.state: Optional[torch.Tensor] = None
@@ -196,7 +192,7 @@ class ReservoirLayer(nn.Module):
                 )
         else:
             # Default: uniform random scaled by feedback_scaling
-            nn.init.uniform_(self.weight_feedback, -self.feedback_scaling, self.feedback_scaling)
+            nn.init.uniform_(self.weight_feedback, -1, 1)
 
     def _initialize_input_weights(self) -> None:
         """Initialize driving input weight matrix.
@@ -219,8 +215,8 @@ class ReservoirLayer(nn.Module):
                     f"got {type(self.input_initializer).__name__}"
                 )
         else:
-            # Default: uniform random scaled by input_scaling
-            nn.init.uniform_(self.weight_input, -self.input_scaling, self.input_scaling)
+            # Default: uniform random
+            nn.init.uniform_(self.weight_input, -1, 1)
 
     def _initialize_recurrent_weights(self) -> None:
         """Initialize recurrent weight matrix.
@@ -252,8 +248,9 @@ class ReservoirLayer(nn.Module):
         else:
             # Random initialization
             nn.init.uniform_(self.weight_hh, -1.0, 1.0)
-            # Scale to desired spectral radius
-            self._scale_spectral_radius()
+            # Scale to desired spectral radius (if specified)
+            if self.spectral_radius is not None:
+                self._scale_spectral_radius()
 
     def _scale_spectral_radius(self) -> None:
         """Scale recurrent weight matrix to desired spectral radius.
@@ -365,7 +362,7 @@ class ReservoirLayer(nn.Module):
                 pre_activation = pre_activation + self.bias_h
 
             # Apply activation
-            new_state = self.activation(pre_activation)
+            new_state = self.activation_fn(pre_activation)
 
             # Leaky integration
             if self.leak_rate < 1.0:
@@ -413,6 +410,11 @@ class ReservoirLayer(nn.Module):
             Current state tensor of shape (B, reservoir_size), or None if not initialized
         """
         return self.state.clone() if self.state is not None else None
+
+    @property
+    def activation(self) -> str:
+        """Get activation function."""
+        return self._activation_name
 
     def __repr__(self) -> str:
         """String representation."""
