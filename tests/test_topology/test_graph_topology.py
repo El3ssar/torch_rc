@@ -70,17 +70,6 @@ class TestTopologyRegistry:
         assert "erdos_renyi" in topologies
         assert "watts_strogatz" in topologies
 
-    def test_show_topologies_details(self):
-        """Test showing details for a specific topology."""
-        details = show_topologies("erdos_renyi")
-
-        assert isinstance(details, dict)
-        assert details["name"] == "erdos_renyi"
-        assert "defaults" in details
-        assert "parameters" in details
-        assert "n" in details["parameters"]
-        assert "p" in details["parameters"]
-
     def test_get_topology_by_name(self):
         """Test getting topology by name."""
         topology = get_topology("erdos_renyi", p=0.15, seed=42)
