@@ -43,12 +43,17 @@ reservoir = ReservoirLayer(
 ### Available Named Topologies
 
 ```python
-from torch_rc.topology import list_topologies
+from torch_rc.init.topology import show_topologies
 
-print(list_topologies())
+# List all available topologies
+print(show_topologies())
 # ['erdos_renyi', 'watts_strogatz', 'barabasi_albert', 'regular',
 #  'complete', 'ring_chord', 'cycle_jumps', 'multi_cycle',
 #  'dendrocycle', 'spectral_cascade']
+
+# Show details for a specific topology
+print(show_topologies("erdos_renyi"))
+# {'name': 'erdos_renyi', 'defaults': {...}, 'parameters': {...}}
 ```
 
 ### Custom Topology Parameters
