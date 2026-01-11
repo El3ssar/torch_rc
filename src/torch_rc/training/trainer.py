@@ -4,7 +4,6 @@ This module provides the ESNTrainer class that trains ESN models by fitting
 each ReadoutLayer algebraically in topological order.
 """
 
-from typing import Dict, List, Optional, Tuple
 
 import torch
 
@@ -46,9 +45,9 @@ class ESNTrainer:
 
     def fit(
         self,
-        warmup_inputs: Tuple[torch.Tensor, ...],
-        train_inputs: Tuple[torch.Tensor, ...],
-        targets: Dict[str, torch.Tensor],
+        warmup_inputs: tuple[torch.Tensor, ...],
+        train_inputs: tuple[torch.Tensor, ...],
+        targets: dict[str, torch.Tensor],
     ) -> None:
         """Train all readout layers in topological order.
 
@@ -108,9 +107,9 @@ class ESNTrainer:
                 )
 
             # Capture parent output during forward pass
-            captured: Dict[str, torch.Tensor] = {}
+            captured: dict[str, torch.Tensor] = {}
 
-            def make_hook(storage: Dict[str, torch.Tensor]):
+            def make_hook(storage: dict[str, torch.Tensor]):
                 def hook(module, input, output):
                     storage["output"] = output
 
@@ -140,7 +139,7 @@ class ESNTrainer:
             finally:
                 handle.remove()
 
-    def _get_readouts_in_order(self) -> List[Tuple[str, ReadoutLayer, object]]:
+    def _get_readouts_in_order(self) -> list[tuple[str, ReadoutLayer, object]]:
         """Return [(resolved_name, layer, node), ...] in topological order.
 
         Returns:
@@ -161,7 +160,7 @@ class ESNTrainer:
                 readouts.append((resolved_name, layer, node))
         return readouts
 
-    def _get_parent_layer_name(self, node) -> Optional[str]:
+    def _get_parent_layer_name(self, node) -> str | None:
         """Get module name of parent node.
 
         Args:
@@ -176,7 +175,7 @@ class ESNTrainer:
         parent_node = node.parents[0]  # Readout typically has single parent
         return self.model._node_to_layer_name.get(parent_node)
 
-    def _validate_targets(self, targets: Dict[str, torch.Tensor]) -> None:
+    def _validate_targets(self, targets: dict[str, torch.Tensor]) -> None:
         """Raise error if any readout is missing a target.
 
         Args:
