@@ -1,7 +1,5 @@
 """Dendrocycle-specific input initializer."""
 
-from typing import Optional
-
 import numpy as np
 import torch
 
@@ -42,10 +40,10 @@ class DendrocycleInputInitializer(InputFeedbackInitializer):
 
     def __init__(
         self,
-        c: Optional[float] = None,
-        C: Optional[int] = None,
+        c: float | None = None,
+        C: int | None = None,
         input_scaling: float = 1.0,
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ) -> None:
         """Initialize the DendrocycleInputInitializer."""
         if (c is None) == (C is None):

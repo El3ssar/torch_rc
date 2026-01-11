@@ -1,7 +1,6 @@
 """Binary balanced initializer using Hadamard structure."""
 
 from math import gcd
-from typing import Optional
 
 import numpy as np
 import torch
@@ -59,10 +58,10 @@ class BinaryBalancedInitializer(InputFeedbackInitializer):
 
     def __init__(
         self,
-        input_scaling: Optional[float] = None,
+        input_scaling: float | None = None,
         balance_global: bool = True,
-        step: Optional[int] = None,
-        seed: Optional[int] = None,  # Unused, for API consistency
+        step: int | None = None,
+        seed: int | None = None,  # Unused, for API consistency
     ) -> None:
         """Initialize the BinaryBalancedInitializer."""
         self.input_scaling = input_scaling
@@ -84,7 +83,7 @@ class BinaryBalancedInitializer(InputFeedbackInitializer):
         return H
 
     @staticmethod
-    def _choose_step(L: int, preferred: Optional[int]) -> int:
+    def _choose_step(L: int, preferred: int | None = None) -> int:
         """Choose a step s coprime with L for column selection."""
         if preferred is not None and gcd(preferred, L) == 1:
             return int(preferred)

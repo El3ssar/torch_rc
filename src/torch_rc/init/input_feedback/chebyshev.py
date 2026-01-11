@@ -1,7 +1,5 @@
 """Chebyshev mapping initializer for input/feedback weights."""
 
-from typing import Optional
-
 import numpy as np
 import torch
 
@@ -64,7 +62,7 @@ class ChebyshevInitializer(InputFeedbackInitializer):
         p: float = 0.3,
         q: float = 5.9,
         k: float = 3.8,
-        input_scaling: Optional[float] = None,
+        input_scaling: float | None = None,
     ) -> None:
         """Initialize the ChebyshevInitializer."""
         if not (2.0 < k < 4.0):

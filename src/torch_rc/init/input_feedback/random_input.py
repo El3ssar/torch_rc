@@ -1,7 +1,5 @@
 """Random uniform initializer for input/feedback weights."""
 
-from typing import Optional
-
 import numpy as np
 import torch
 
@@ -75,8 +73,8 @@ class RandomInputInitializer(InputFeedbackInitializer):
 
     def __init__(
         self,
-        input_scaling: Optional[float] = None,
-        seed: Optional[int] = None,
+        input_scaling: float | None = None,
+        seed: int | None = None,
     ) -> None:
         """Initialize the RandomInputInitializer."""
         self.input_scaling = input_scaling

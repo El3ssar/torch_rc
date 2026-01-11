@@ -5,7 +5,7 @@ matrices using networkx. These are wrapped by the topology system to initialize
 reservoir weight tensors.
 
 All graph functions follow the signature:
-    graph_func(n: int, *args, **kwargs) -> Union[nx.Graph, nx.DiGraph]
+    graph_func(n: int, *args, **kwargs) -> nx.Graph | nx.DiGraph
 
 Where:
     - n: Number of nodes (will be reservoir_size)

@@ -9,12 +9,12 @@ The registry supports two families of initializers:
 """
 
 import inspect
-from typing import Any, Callable, Dict, List, Optional, Union, get_args, get_origin
+from typing import Any, Callable, get_args, get_origin
 
 from .base import GraphTopology
 
 # Registry of topology names to (graph_func, default_kwargs)
-_TOPOLOGY_REGISTRY: Dict[str, tuple[Callable, Dict[str, Any]]] = {}
+_TOPOLOGY_REGISTRY: dict[str, tuple[Callable, dict[str, Any]]] = {}
 
 
 def register_graph_topology(
@@ -103,7 +103,7 @@ def get_topology(
     return GraphTopology(graph_func, kwargs)
 
 
-def show_topologies(name: Optional[str] = None) -> Union[List[str], Dict[str, Any]]:
+def show_topologies(name: str | None = None) -> list[str] | None:
     """Show available topologies or details for a specific topology.
 
     Parameters
@@ -113,7 +113,7 @@ def show_topologies(name: Optional[str] = None) -> Union[List[str], Dict[str, An
 
     Returns
     -------
-    list of str or dict
+    list[str] | None
         If name is None: sorted list of registered topology names.
         If name is provided: dict with 'name', 'defaults', and 'parameters' keys.
 

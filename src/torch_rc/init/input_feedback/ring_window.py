@@ -1,7 +1,5 @@
 """Ring window initializer for dendrocycle+chords topologies."""
 
-from typing import Union
-
 import numpy as np
 import torch
 
@@ -49,7 +47,7 @@ class RingWindowInputInitializer(InputFeedbackInitializer):
     def __init__(
         self,
         c: float,
-        window: Union[int, float],
+        window: int | float,
         taper: str = "flat",
         signed: str = "allpos",
         gain: float = 1.0,

@@ -4,14 +4,14 @@ This module provides helper functions to resolve flexible specification formats
 (strings, tuples, or objects) into concrete initializer/topology objects.
 """
 
-from typing import Any, Dict, Tuple, Union
+from typing import Any
 
 from ..input_feedback import InputFeedbackInitializer, get_input_feedback
 from ..topology import GraphTopology, get_topology
 
 # Type aliases for specification formats
-TopologySpec = Union[None, str, Tuple[str, Dict[str, Any]], GraphTopology]
-InitializerSpec = Union[None, str, Tuple[str, Dict[str, Any]], InputFeedbackInitializer]
+TopologySpec = None | str | tuple[str, dict[str, Any]] | GraphTopology
+InitializerSpec = None | str | tuple[str, dict[str, Any]] | InputFeedbackInitializer
 
 
 def resolve_topology(spec: TopologySpec) -> GraphTopology | None:

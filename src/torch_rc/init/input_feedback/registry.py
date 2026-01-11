@@ -5,12 +5,12 @@ used in reservoir input and feedback connections.
 """
 
 import inspect
-from typing import Any, Callable, Dict, List, Optional, Type, Union, get_args, get_origin
+from typing import Any, Callable, Type, get_args, get_origin
 
 from .base import InputFeedbackInitializer
 
 # Registry of initializer names to (class, default_kwargs)
-_INPUT_FEEDBACK_REGISTRY: Dict[str, tuple[Type[InputFeedbackInitializer], Dict[str, Any]]] = {}
+_INPUT_FEEDBACK_REGISTRY: dict[str, tuple[Type[InputFeedbackInitializer], dict[str, Any]]] = {}
 
 
 def register_input_feedback(
@@ -102,7 +102,7 @@ def get_input_feedback(
     return init_class(**kwargs)
 
 
-def show_input_initializers(name: Optional[str] = None) -> Union[List[str], Dict[str, Any]]:
+def show_input_initializers(name: str | None = None) -> list[str] | None:
     """Show available input/feedback initializers or details for a specific one.
 
     Parameters
@@ -112,7 +112,7 @@ def show_input_initializers(name: Optional[str] = None) -> Union[List[str], Dict
 
     Returns
     -------
-    list of str or dict
+    list[str] | None
         If name is None: sorted list of registered initializer names.
         If name is provided: dict with 'name', 'defaults', and 'parameters' keys.
 
@@ -146,7 +146,7 @@ def show_input_initializers(name: Optional[str] = None) -> Union[List[str], Dict
     init_class, default_kwargs = _INPUT_FEEDBACK_REGISTRY[name]
 
     sig = inspect.signature(init_class.__init__)
-    types: Dict[str, str] = {}
+    types: dict[str, str] = {}
 
     for param_name, param in sig.parameters.items():
         if param_name == "self":

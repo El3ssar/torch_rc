@@ -48,8 +48,8 @@ class RandomBinaryInitializer(InputFeedbackInitializer):
 
     def __init__(
         self,
-        input_scaling: Optional[float] = None,
-        seed: Optional[int] = None,
+        input_scaling: float | None = None,
+        seed: int | None = None,
     ) -> None:
         """Initialize the RandomBinaryInitializer."""
         self.input_scaling = input_scaling

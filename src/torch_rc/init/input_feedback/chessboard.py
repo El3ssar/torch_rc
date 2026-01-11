@@ -1,7 +1,5 @@
 """Chessboard pattern initializer for input/feedback weights."""
 
-from typing import Optional
-
 import numpy as np
 import torch
 
@@ -39,7 +37,7 @@ class ChessboardInitializer(InputFeedbackInitializer):
     >>> #  ...]
     """
 
-    def __init__(self, input_scaling: Optional[float] = None) -> None:
+    def __init__(self, input_scaling: float | None = None) -> None:
         """Initialize the ChessboardInitializer."""
         self.input_scaling = input_scaling
 

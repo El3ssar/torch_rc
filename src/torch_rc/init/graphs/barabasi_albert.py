@@ -1,4 +1,3 @@
-from typing import Union
 
 import numpy as np
 from networkx import DiGraph, Graph
@@ -18,7 +17,7 @@ def barabasi_albert_graph(
     m: int,
     directed: bool = False,
     seed: int | np.random.Generator | None = None,
-) -> Union[DiGraph, Graph]:
+) -> DiGraph | Graph:
     """
     Generates a Barabási-Albert scale-free network.
 

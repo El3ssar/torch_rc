@@ -1,7 +1,5 @@
 """Pseudo-diagonal initializer for structured input connections."""
 
-from typing import Optional
-
 import numpy as np
 import torch
 
@@ -48,9 +46,9 @@ class PseudoDiagonalInitializer(InputFeedbackInitializer):
 
     def __init__(
         self,
-        input_scaling: Optional[float] = None,
+        input_scaling: float | None = None,
         binarize: bool = False,
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ) -> None:
         """Initialize the PseudoDiagonalInitializer."""
         self.input_scaling = input_scaling

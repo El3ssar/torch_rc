@@ -1,7 +1,7 @@
 """Base topology interface for weight initialization."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable
 
 import networkx as nx
 import numpy as np
@@ -21,7 +21,7 @@ class TopologyInitializer(ABC):
     def initialize(
         self,
         weight: torch.Tensor,
-        spectral_radius: Optional[float] = None,
+        spectral_radius: float | None = None,
     ) -> torch.Tensor:
         """Initialize a weight tensor using graph topology.
 
@@ -65,7 +65,7 @@ class GraphTopology(TopologyInitializer):
     def __init__(
         self,
         graph_func: Callable,
-        graph_kwargs: Optional[Dict[str, Any]] = None,
+        graph_kwargs: dict[str, Any] | None = None,
     ):
         self.graph_func = graph_func
         self.graph_kwargs = graph_kwargs or {}
@@ -73,7 +73,7 @@ class GraphTopology(TopologyInitializer):
     def initialize(
         self,
         weight: torch.Tensor,
-        spectral_radius: Optional[float] = None,
+        spectral_radius: float | None = None,
     ) -> torch.Tensor:
         """Initialize weight tensor from graph topology.
 

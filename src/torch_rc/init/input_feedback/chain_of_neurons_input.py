@@ -1,6 +1,6 @@
 """Chain-of-neurons specific input initializer."""
 
-from typing import Sequence, Union
+from typing import Sequence
 
 import numpy as np
 import torch
@@ -39,7 +39,7 @@ class ChainOfNeuronsInputInitializer(InputFeedbackInitializer):
     def __init__(
         self,
         features: int,
-        weights: Union[float, Sequence[float]] = 1.0,
+        weights: float | Sequence[float] = 1.0,
     ):
         """Initialize the ChainOfNeuronsInputInitializer."""
         if features is None:
