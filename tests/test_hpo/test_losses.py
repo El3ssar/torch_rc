@@ -62,7 +62,7 @@ class TestLossFunctionsBasic:
     def test_all_losses_lower_for_better_predictions(self):
         """All losses should be lower for better predictions."""
         y_pred_bad = self.y_true + np.random.randn(4, 100, 3) * 1.0
-        
+
         for name, loss_fn in LOSSES.items():
             loss_good = loss_fn(self.y_true, self.y_pred)
             loss_bad = loss_fn(self.y_true, y_pred_bad)
@@ -78,7 +78,7 @@ class TestLossFunctionsShapes:
         """Works with single batch (1, T, D)."""
         y_true = np.random.randn(1, 50, 3)
         y_pred = y_true + np.random.randn(1, 50, 3) * 0.1
-        
+
         for name, loss_fn in LOSSES.items():
             loss = loss_fn(y_true, y_pred)
             assert isinstance(loss, float), f"Loss {name} failed single batch"
@@ -87,7 +87,7 @@ class TestLossFunctionsShapes:
         """Works with single feature (B, T, 1)."""
         y_true = np.random.randn(4, 50, 1)
         y_pred = y_true + np.random.randn(4, 50, 1) * 0.1
-        
+
         for name, loss_fn in LOSSES.items():
             loss = loss_fn(y_true, y_pred)
             assert isinstance(loss, float), f"Loss {name} failed single feature"
@@ -96,7 +96,7 @@ class TestLossFunctionsShapes:
         """Shape mismatch raises ValueError."""
         y_true = np.random.randn(4, 50, 3)
         y_pred = np.random.randn(4, 60, 3)  # Different time steps
-        
+
         for name, loss_fn in LOSSES.items():
             with pytest.raises(ValueError):
                 loss_fn(y_true, y_pred)
@@ -155,9 +155,10 @@ class TestGetLoss:
 
     def test_get_callable_passthrough(self):
         """Callable is passed through."""
+
         def my_loss(y_true, y_pred):
             return 0.0
-        
+
         result = get_loss(my_loss)
         assert result is my_loss
 

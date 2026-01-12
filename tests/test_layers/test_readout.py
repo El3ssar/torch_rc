@@ -190,15 +190,15 @@ class TestReadoutLayerProperties:
 
 
 class TestReadoutLayerFit:
-    """Test fit() method (Phase 4 stub)."""
+    """Test fit() method raises NotImplementedError in base class."""
 
     def test_fit_raises_not_implemented(self) -> None:
-        """Test that fit() raises NotImplementedError (Phase 1)."""
+        """Test that fit() raises NotImplementedError in base ReadoutLayer."""
         readout = ReadoutLayer(100, 10)
         states = torch.randn(10, 20, 100)
         targets = torch.randn(10, 20, 10)
 
-        with pytest.raises(NotImplementedError, match="Phase 4"):
+        with pytest.raises(NotImplementedError, match="not implemented"):
             readout.fit(states, targets)
 
 
