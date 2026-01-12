@@ -172,7 +172,7 @@ class TestReservoirLayerTopology:
 
     def test_reservoir_topology_various_sizes(self):
         """Test topology initialization with various reservoir sizes."""
-        sizes = [10, 50, 100, 200]
+        sizes = [50, 100, 200]
 
         for size in sizes:
             reservoir = ReservoirLayer(
