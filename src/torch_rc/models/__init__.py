@@ -1,16 +1,50 @@
-"""Premade model architectures for torch_rc.
+"""
+Premade ESN Architectures
+=========================
 
-This module contains pre-configured ESN architectures that can be used
-directly or customized for specific tasks.
+This module provides pre-configured ESN model architectures that can be
+used directly or customized for specific tasks.
 
-Available architectures:
-- classic_esn: Traditional ESN with input concatenation
-- ott_esn: Ott's ESN with state augmentation (squared even units)
-- headless_esn: Reservoir only (no readout) for analysis
-- linear_esn: Linear reservoir for baseline comparison
+Functions
+---------
+classic_esn
+    Traditional ESN with input concatenation.
+ott_esn
+    Ott's ESN with state augmentation (squared even units).
+headless_esn
+    Reservoir only (no readout) for analysis.
+linear_esn
+    Linear reservoir for baseline comparison.
 
-Each architecture accepts config dicts for full customization while
-providing sensible defaults for quick experimentation.
+Each architecture accepts individual parameters for full customization
+while providing sensible defaults for quick experimentation.
+
+Examples
+--------
+Quick start with Ott's ESN:
+
+>>> from torch_rc.models import ott_esn
+>>> model = ott_esn(reservoir_size=500, feedback_size=3, output_size=3)
+>>> predictions = model.forecast(warmup_data, horizon=100)
+
+Classic ESN with custom topology:
+
+>>> from torch_rc.models import classic_esn
+>>> from torch_rc.init.topology import get_topology
+>>>
+>>> model = classic_esn(
+...     reservoir_size=500,
+...     feedback_size=3,
+...     output_size=3,
+...     topology=get_topology("watts_strogatz", k=4, p=0.3),
+...     spectral_radius=0.95,
+... )
+
+See Also
+--------
+torch_rc.composition.ESNModel : Base ESN model class.
+torch_rc.layers.ReservoirLayer : Reservoir layer used by these models.
+torch_rc.training.ESNTrainer : Trainer for fitting readout layers.
 """
 
 from .classic_esn import classic_esn

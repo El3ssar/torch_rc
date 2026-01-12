@@ -87,5 +87,4 @@ def linear_esn(
         **reservoir_kwargs,
     )(inp)
 
-
     return ESNModel(inp, reservoir)

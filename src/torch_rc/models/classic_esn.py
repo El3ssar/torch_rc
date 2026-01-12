@@ -1,4 +1,15 @@
-"""Classic ESN architecture with input concatenation."""
+"""Classic ESN architecture with input concatenation.
+
+This module provides the :func:`classic_esn` function for building traditional
+Echo State Network architectures where the input is concatenated with the
+reservoir output before the readout layer.
+
+See Also
+--------
+:func:`torch_rc.models.ott_esn` : OTT (Open Temporal Topology) ESN variant
+:func:`torch_rc.models.linear_esn` : Linear ESN variant
+:func:`torch_rc.models.headless_esn` : Headless ESN (no readout)
+"""
 
 from typing import Any
 
@@ -35,7 +46,8 @@ def classic_esn(
     This architecture concatenates the input with the reservoir output before
     passing to the readout layer, following the traditional ESN design.
 
-    Architecture:
+    Architecture::
+
         Input -> Reservoir -> Concatenate(Input, Reservoir) -> Readout
 
     The readout sees both the raw input and the reservoir's nonlinear
@@ -45,26 +57,28 @@ def classic_esn(
     ----------
     reservoir_size : int
         Number of units in the reservoir.
-    input_size : int
-        Number of input features.
+    feedback_size : int
+        Number of feedback features (input dimension).
     output_size : int
         Number of output features.
     topology : TopologySpec, optional
         Topology for recurrent weights. Accepts:
-        - str: Registry name (e.g., "erdos_renyi")
-        - tuple: (name, params) like ("watts_strogatz", {"k": 6, "p": 0.1})
-        - GraphTopology: Pre-configured object
+
+        - str: Registry name (e.g., ``"erdos_renyi"``)
+        - tuple: (name, params) like ``("watts_strogatz", {"k": 6, "p": 0.1})``
+        - :class:`~torch_rc.init.topology.TopologyInitializer`: Pre-configured object
     spectral_radius : float, default=0.9
         Desired spectral radius for recurrent weights.
     leak_rate : float, default=1.0
         Leaky integration rate (1.0 = no leak).
     feedback_initializer : InitializerSpec, optional
         Initializer for feedback weights. Accepts:
-        - str: Registry name (e.g., "pseudo_diagonal")
-        - tuple: (name, params) like ("chebyshev", {"p": 0.5})
-        - InputFeedbackInitializer: Pre-configured object
+
+        - str: Registry name (e.g., ``"pseudo_diagonal"``)
+        - tuple: (name, params) like ``("chebyshev", {"p": 0.5})``
+        - :class:`~torch_rc.init.input_feedback.InputFeedbackInitializer`: Pre-configured object
     activation : str, default="tanh"
-        Activation function ("tanh", "relu", "sigmoid", "identity").
+        Activation function (``"tanh"``, ``"relu"``, ``"sigmoid"``, ``"identity"``).
     bias : bool, default=True
         Whether to use bias in the reservoir.
     trainable : bool, default=False
@@ -75,36 +89,44 @@ def classic_esn(
         Whether to use bias in the readout.
     readout_name : str, default="output"
         Name for the readout layer (used in training targets).
-    **reservoir_kwargs
-        Additional keyword arguments passed to ReservoirLayer.
+    **reservoir_kwargs : Any
+        Additional keyword arguments passed to :class:`~torch_rc.layers.ReservoirLayer`.
 
     Returns
     -------
-    ESNModel
+    :class:`~torch_rc.composition.ESNModel`
         Configured ESN model ready for training and inference.
 
     Examples
     --------
+    Simple usage with defaults:
+
     >>> from torch_rc.models import classic_esn
     >>> import torch
-    >>>
-    >>> # Simple usage with defaults
     >>> model = classic_esn(100, 1, 1)
-    >>>
-    >>> # With custom topology and initializer
+
+    With custom topology and initializer:
+
     >>> model = classic_esn(
     ...     reservoir_size=400,
-    ...     input_size=1,
+    ...     feedback_size=1,
     ...     output_size=1,
     ...     topology=("watts_strogatz", {"k": 6, "p": 0.1}),
     ...     feedback_initializer="pseudo_diagonal",
     ...     spectral_radius=0.9,
     ...     leak_rate=0.5,
     ... )
-    >>>
-    >>> # Forward pass
+
+    Forward pass:
+
     >>> x = torch.randn(4, 50, 1)  # (batch, time, features)
     >>> y = model(x)
+
+    See Also
+    --------
+    :func:`torch_rc.models.ott_esn` : OTT ESN variant
+    :func:`torch_rc.models.linear_esn` : Linear ESN variant
+    :class:`torch_rc.training.ESNTrainer` : Trainer for fitting readouts
     """
     # Resolve topology and initializer specs
     resolved_topology = resolve_topology(topology)
