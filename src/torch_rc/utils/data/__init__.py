@@ -1,16 +1,65 @@
-"""Data loading and preparation utilities for torch_rc.
+"""
+Data Loading and Preparation
+============================
 
-This module provides utilities for:
-- Loading time series data from various file formats
-- Preparing data for ESN training and forecasting
-- Normalization and data splitting
+This module provides utilities for loading time series data and preparing
+it for ESN training and forecasting.
 
-Example:
-    >>> from torch_rc.utils.data import load_file, prepare_esn_data
-    >>> data = load_file("timeseries.csv")
-    >>> warmup, train, target, forecast_warmup, val = prepare_esn_data(
-    ...     data, warmup_steps=100, train_steps=500, val_steps=200
-    ... )
+File I/O Functions
+------------------
+load_file
+    Auto-detect format and load time series data.
+load_csv
+    Load data from CSV file.
+load_npy
+    Load data from NumPy .npy file.
+load_npz
+    Load data from NumPy .npz archive.
+load_nc
+    Load data from NetCDF file.
+save_csv, save_npy, save_npz, save_nc
+    Save data in respective formats.
+list_files
+    List files matching a pattern.
+
+Data Preparation Functions
+--------------------------
+prepare_esn_data
+    Split time series into warmup, train, target, f_warmup, val.
+normalize_data
+    Normalize data using various methods.
+load_and_prepare
+    Load and prepare data in one step.
+
+Examples
+--------
+Loading and preparing data:
+
+>>> from torch_rc.utils.data import load_file, prepare_esn_data
+>>> data = load_file("lorenz.csv")
+>>> warmup, train, target, f_warmup, val = prepare_esn_data(
+...     data,
+...     warmup_steps=100,
+...     train_steps=500,
+...     val_steps=200,
+...     normalize="minmax",
+... )
+
+Using load_and_prepare for convenience:
+
+>>> from torch_rc.utils.data import load_and_prepare
+>>> splits = load_and_prepare(
+...     "lorenz.csv",
+...     warmup_steps=100,
+...     train_steps=500,
+...     val_steps=200,
+... )
+>>> warmup, train, target, f_warmup, val = splits
+
+See Also
+--------
+torch_rc.training.ESNTrainer : Uses prepared data for training.
+torch_rc.composition.ESNModel.forecast : Uses prepared data for forecasting.
 """
 
 from .io import (
