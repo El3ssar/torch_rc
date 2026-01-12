@@ -434,6 +434,21 @@ class ReservoirLayer(nn.Module):
         else:
             self.state = None
 
+    def set_random_state(self) -> None:
+        """
+        Set internal state to a random value.
+
+        Examples
+        --------
+        >>> reservoir.set_random_state()
+        >>> print(reservoir.state.shape)
+        torch.Size([batch_size, reservoir_size])
+        """
+        if self._initialized:
+            self.state = torch.randn(self.state.shape, device=self.state.device, dtype=self.state.dtype)
+        else:
+            raise RuntimeError("Reservoir not initialized")
+
     def set_state(self, state: torch.Tensor) -> None:
         """
         Set internal state to a specific value.
