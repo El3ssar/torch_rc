@@ -17,7 +17,7 @@
 - 🧩 **Modular Design**: Build complex architectures with simple building blocks
 - 📊 **Multiple Topologies**: 15+ graph topologies for reservoir initialization
 - 🔬 **Algebraic Training**: Efficient ridge regression via Conjugate Gradient
-- 🎨 **Flexible API**: Compose models using `pytorch_symbolic` 
+- 🎨 **Flexible API**: Compose models using `pytorch_symbolic`
 - 📈 **HPO Ready**: Built-in Optuna integration for hyperparameter optimization
 - 🔧 **Production Ready**: Stateful layers, model persistence, GPU compilation
 
@@ -232,6 +232,7 @@ reservoir = ReservoirLayer(
 ```
 
 **Available topologies:**
+
 - `erdos_renyi` - Random graphs with edge probability
 - `watts_strogatz` - Small-world networks
 - `barabasi_albert` - Scale-free networks
@@ -349,6 +350,7 @@ print(f"Best params: {study.best_params}")
 ```
 
 **Available loss functions:**
+
 - `efh` - Expected Forecast Horizon (recommended for chaotic systems)
 - `horizon` - Contiguous valid forecast steps
 - `lyap` - Lyapunov-weighted loss
