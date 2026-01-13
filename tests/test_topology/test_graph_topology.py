@@ -167,7 +167,7 @@ class TestDendrocycleRounding:
         for c, d in test_cases:
             if c + d > 1.0:
                 continue  # Skip invalid combinations
-            
+
             topology = GraphTopology(dendrocycle_graph, {"c": c, "d": d, "seed": 42})
             weight = torch.empty(n, n)
 
