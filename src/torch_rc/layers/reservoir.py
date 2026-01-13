@@ -445,7 +445,9 @@ class ReservoirLayer(nn.Module):
         torch.Size([batch_size, reservoir_size])
         """
         if self._initialized:
-            self.state = torch.randn(self.state.shape, device=self.state.device, dtype=self.state.dtype)
+            self.state = torch.randn(
+                self.state.shape, device=self.state.device, dtype=self.state.dtype
+            )
         else:
             raise RuntimeError("Reservoir not initialized")
 

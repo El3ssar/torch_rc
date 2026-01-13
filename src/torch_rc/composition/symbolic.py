@@ -133,6 +133,7 @@ class ESNModel(ps.SymbolicModel):
         for module in self.modules():
             if isinstance(module, ReservoirLayer):
                 module.reset_state()
+
     def set_random_reservoir_states(self) -> None:
         """
         Set random states of all reservoir layers.
