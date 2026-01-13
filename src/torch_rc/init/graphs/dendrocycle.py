@@ -120,6 +120,12 @@ def dendrocycle_graph(
     # ----- Node counts
     C = max(2, int(round(c * n)))
     D = max(0, int(round(d * n)))
+
+    # Ensure C + D doesn't exceed n due to rounding
+    if C + D > n:
+        # Prioritize core size, adjust dendritic
+        D = max(0, n - C)
+
     A = max(0, n - C - D)
 
     # ----- Node indexing: core first, dendritic next, quiescent last
