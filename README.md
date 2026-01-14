@@ -482,7 +482,7 @@ Current test coverage: **57%** (240 tests passing)
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/resdag.git
+git clone https://github.com/El3ssar/resdag.git
 cd resdag
 
 # Install with development dependencies
@@ -549,11 +549,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 If you use `resdag` in your research, please cite:
 
 ```bibtex
-@software{resdag2024,
+@software{resdag2026,
   author = {Daniel Estevez-Moya},
   title = {resdag: A PyTorch Library for Reservoir Computing},
-  year = {2024},
-  url = {https://github.com/yourusername/resdag}
+  year = {2026},
+  url = {https://github.com/El3ssar/resdag}
 }
 ```
 
@@ -570,6 +570,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built on [PyTorch](https://pytorch.org/) and [pytorch_symbolic](https://github.com/pytorch-labs/pytorch-symbolic)
 - Inspired by [ReservoirPy](https://github.com/reservoirpy/reservoirpy) and classical ESN literature
 - Graph generation powered by [NetworkX](https://networkx.org/)
+- Model construction made easy and modular thanks to [Pytorch-Symbolic](https://pytorch-symbolic.readthedocs.io/en/latest/)
 
 ---
 
@@ -577,7 +578,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Author**: Daniel Estevez-Moya
 - **Email**: kemossabee@gmail.com
-- **Issues**: [GitHub Issues](https://github.com/yourusername/resdag/issues)
+- **Issues**: [GitHub Issues](https://github.com/El3ssar/resdag/issues)
 
 ---
 
