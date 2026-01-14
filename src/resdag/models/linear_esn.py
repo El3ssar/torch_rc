@@ -5,7 +5,7 @@ from typing import Any
 import pytorch_symbolic as ps
 
 from resdag.composition import ESNModel
-from resdag.init.utils import InitializerSpec, TopologySpec, resolve_initializer, resolve_topology
+from resdag.init.utils import InitializerSpec, TopologySpec
 from resdag.layers import ReservoirLayer
 
 
@@ -66,10 +66,6 @@ def linear_esn(
     >>> model = linear_esn(100, 1)
     >>> linear_states = model(input_data)
     """
-    # Resolve topology and initializer specs
-    resolved_topology = resolve_topology(topology)
-    resolved_feedback_init = resolve_initializer(feedback_initializer)
-
     # Build model - just input and reservoir with linear activation
     inp = ps.Input((100, feedback_size))
 
@@ -77,10 +73,10 @@ def linear_esn(
         reservoir_size=reservoir_size,
         feedback_size=feedback_size,
         input_size=0,
-        topology=resolved_topology,
+        topology=topology,
         spectral_radius=spectral_radius,
         leak_rate=leak_rate,
-        feedback_initializer=resolved_feedback_init,
+        feedback_initializer=feedback_initializer,
         activation="identity",  # Force linear activation
         bias=bias,
         trainable=trainable,
