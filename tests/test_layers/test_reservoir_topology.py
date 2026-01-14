@@ -117,12 +117,39 @@ class TestReservoirLayerTopology:
 
     def test_reservoir_topology_invalid_type(self):
         """Test that invalid topology type raises error."""
-        with pytest.raises(TypeError, match="topology must be a string or TopologyInitializer"):
+        with pytest.raises(TypeError, match="Invalid topology spec type"):
             ReservoirLayer(
                 reservoir_size=30,
                 feedback_size=5,
                 topology=123,  # Invalid type
             )
+
+    def test_reservoir_with_tuple_topology_spec(self):
+        """Test reservoir with tuple (name, params) topology specification."""
+        reservoir = ReservoirLayer(
+            reservoir_size=50,
+            feedback_size=10,
+            topology=("watts_strogatz", {"k": 4, "p": 0.3, "seed": 42}),
+            spectral_radius=0.9,
+        )
+
+        assert reservoir.weight_hh.shape == (50, 50)
+
+        # Verify spectral radius is approximately correct
+        eigenvalues = torch.linalg.eigvals(reservoir.weight_hh.data)
+        actual_radius = torch.max(torch.abs(eigenvalues)).item()
+        assert abs(actual_radius - 0.9) < 0.05
+
+    def test_reservoir_with_tuple_initializer_spec(self):
+        """Test reservoir with tuple (name, params) initializer specification."""
+        reservoir = ReservoirLayer(
+            reservoir_size=50,
+            feedback_size=10,
+            feedback_initializer=("pseudo_diagonal", {"input_scaling": 0.5}),
+            spectral_radius=0.9,
+        )
+
+        assert reservoir.weight_feedback.shape == (50, 10)
 
     def test_reservoir_topology_state_persistence(self):
         """Test that topology-based reservoir maintains state correctly."""
