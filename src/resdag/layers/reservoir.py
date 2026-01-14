@@ -18,8 +18,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..init.input_feedback import InputFeedbackInitializer, get_input_feedback
-from ..init.topology import TopologyInitializer, get_topology
+from ..init.utils import InitializerSpec, TopologySpec, resolve_initializer, resolve_topology
 
 
 class ReservoirLayer(nn.Module):
@@ -48,12 +47,13 @@ class ReservoirLayer(nn.Module):
         Dimension of feedback signal. Required for all reservoirs.
     input_size : int, optional
         Dimension of driving inputs. If None, no driving input is expected.
-    topology : str or TopologyInitializer, optional
-        Graph topology for recurrent weights. Can be:
+    topology : str, tuple, or TopologyInitializer, optional
+        Graph topology for recurrent weights. Accepts:
 
         - None: Random uniform initialization (default)
-        - str: Registered topology name (e.g., ``"erdos_renyi"``, ``"watts_strogatz"``)
-        - TopologyInitializer: Custom topology instance
+        - str: Registry name (e.g., ``"erdos_renyi"``, ``"watts_strogatz"``)
+        - tuple: ``(name, params)`` like ``("watts_strogatz", {"k": 6, "p": 0.1})``
+        - TopologyInitializer: Pre-configured topology instance
 
     spectral_radius : float, optional
         Target spectral radius for recurrent weights. Controls the
@@ -69,12 +69,17 @@ class ReservoirLayer(nn.Module):
     trainable : bool, default=False
         If True, reservoir weights are trainable via backpropagation.
         Standard ESNs use frozen (non-trainable) weights.
-    feedback_initializer : str or InputFeedbackInitializer, optional
-        Initializer for feedback weight matrix. If None, uses uniform
-        random initialization.
-    input_initializer : str or InputFeedbackInitializer, optional
-        Initializer for input weight matrix. If None, uses uniform
-        random initialization. Only used if ``input_size`` is provided.
+    feedback_initializer : str, tuple, or InputFeedbackInitializer, optional
+        Initializer for feedback weight matrix. Accepts:
+
+        - None: Uniform random initialization (default)
+        - str: Registry name (e.g., ``"pseudo_diagonal"``, ``"chebyshev"``)
+        - tuple: ``(name, params)`` like ``("chebyshev", {"p": 0.5, "q": 3.0})``
+        - InputFeedbackInitializer: Pre-configured initializer instance
+
+    input_initializer : str, tuple, or InputFeedbackInitializer, optional
+        Initializer for input weight matrix (driving inputs). Same format
+        as ``feedback_initializer``. Only used if ``input_size`` is provided.
 
     Attributes
     ----------
@@ -113,13 +118,23 @@ class ReservoirLayer(nn.Module):
     >>> driving = torch.randn(4, 50, 5)
     >>> output = reservoir(feedback, driving)
 
-    Using graph topology:
+    Using graph topology by name:
 
     >>> reservoir = ReservoirLayer(
     ...     reservoir_size=500,
     ...     feedback_size=10,
     ...     topology="erdos_renyi",
     ...     spectral_radius=0.9
+    ... )
+
+    Using topology with custom parameters (tuple format):
+
+    >>> reservoir = ReservoirLayer(
+    ...     reservoir_size=500,
+    ...     feedback_size=10,
+    ...     topology=("watts_strogatz", {"k": 6, "p": 0.3}),
+    ...     feedback_initializer=("pseudo_diagonal", {"input_scaling": 0.5}),
+    ...     spectral_radius=0.95
     ... )
 
     Stateful processing across batches:
@@ -146,9 +161,9 @@ class ReservoirLayer(nn.Module):
         activation: str = "tanh",
         leak_rate: float = 1.0,
         trainable: bool = False,
-        feedback_initializer: InputFeedbackInitializer | str | None = None,
-        input_initializer: InputFeedbackInitializer | str | None = None,
-        topology: str | TopologyInitializer | None = None,
+        feedback_initializer: InitializerSpec = None,
+        input_initializer: InitializerSpec = None,
+        topology: TopologySpec = None,
     ) -> None:
         super().__init__()
 
@@ -227,16 +242,11 @@ class ReservoirLayer(nn.Module):
         """Initialize feedback weight matrix."""
         self.weight_feedback = nn.Parameter(torch.empty(self.reservoir_size, self.feedback_size))
 
-        if self.feedback_initializer is not None:
-            if isinstance(self.feedback_initializer, str):
-                self.feedback_initializer = get_input_feedback(self.feedback_initializer)
-            elif isinstance(self.feedback_initializer, InputFeedbackInitializer):
-                self.feedback_initializer.initialize(self.weight_feedback)
-            else:
-                raise TypeError(
-                    f"feedback_initializer must be a string or InputFeedbackInitializer, "
-                    f"got {type(self.feedback_initializer).__name__}"
-                )
+        # Resolve spec to initializer object (handles str, tuple, object, None)
+        resolved = resolve_initializer(self.feedback_initializer)
+
+        if resolved is not None:
+            resolved.initialize(self.weight_feedback)
         else:
             nn.init.uniform_(self.weight_feedback, -1, 1)
 
@@ -245,16 +255,11 @@ class ReservoirLayer(nn.Module):
         assert self.input_size is not None
         self.weight_input = nn.Parameter(torch.empty(self.reservoir_size, self.input_size))
 
-        if self.input_initializer is not None:
-            if isinstance(self.input_initializer, str):
-                self.input_initializer = get_input_feedback(self.input_initializer)
-            elif isinstance(self.input_initializer, InputFeedbackInitializer):
-                self.input_initializer.initialize(self.weight_input)
-            else:
-                raise TypeError(
-                    f"input_initializer must be a string or InputFeedbackInitializer, "
-                    f"got {type(self.input_initializer).__name__}"
-                )
+        # Resolve spec to initializer object (handles str, tuple, object, None)
+        resolved = resolve_initializer(self.input_initializer)
+
+        if resolved is not None:
+            resolved.initialize(self.weight_input)
         else:
             nn.init.uniform_(self.weight_input, -1, 1)
 
@@ -262,18 +267,11 @@ class ReservoirLayer(nn.Module):
         """Initialize recurrent weight matrix from topology or random."""
         self.weight_hh = nn.Parameter(torch.empty(self.reservoir_size, self.reservoir_size))
 
-        if self.topology is not None:
-            if isinstance(self.topology, str):
-                topology_initializer = get_topology(self.topology)
-            elif isinstance(self.topology, TopologyInitializer):
-                topology_initializer = self.topology
-            else:
-                raise TypeError(
-                    f"topology must be a string or TopologyInitializer, "
-                    f"got {type(self.topology).__name__}"
-                )
+        # Resolve spec to topology object (handles str, tuple, object, None)
+        resolved = resolve_topology(self.topology)
 
-            topology_initializer.initialize(self.weight_hh, spectral_radius=self.spectral_radius)
+        if resolved is not None:
+            resolved.initialize(self.weight_hh, spectral_radius=self.spectral_radius)
         else:
             nn.init.uniform_(self.weight_hh, -1.0, 1.0)
             if self.spectral_radius is not None:
