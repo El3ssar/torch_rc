@@ -18,7 +18,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..init.utils import InitializerSpec, TopologySpec, resolve_initializer, resolve_topology
+from resdag.init.utils import InitializerSpec, TopologySpec, resolve_initializer, resolve_topology
 
 
 class ReservoirLayer(nn.Module):
