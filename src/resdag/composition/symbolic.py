@@ -47,7 +47,7 @@ from typing import Any
 import pytorch_symbolic as ps
 import torch
 
-from ..layers import ReservoirLayer
+from resdag.layers import ReservoirLayer
 
 # Re-export for convenience
 Input = ps.Input
