@@ -12,14 +12,14 @@ outputs from already-fitted readouts.
 
 See Also
 --------
-resdag.composition.ESNModel : ESN model class.
+resdag.ESNModel : ESN model class.
 resdag.layers.readouts.CGReadoutLayer : Conjugate gradient readout layer.
 """
 
 import torch
 
-from ..composition.symbolic import ESNModel
-from ..layers.readouts.base import ReadoutLayer
+from resdag import ESNModel
+from resdag.layers import ReadoutLayer
 
 
 class ESNTrainer:
