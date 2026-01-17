@@ -12,8 +12,9 @@ from typing import Any, Callable
 import optuna
 import torch
 
-from ..composition.symbolic import ESNModel
-from ..training import ESNTrainer
+from resdag import ESNModel
+from resdag.training import ESNTrainer
+
 from .losses import LossProtocol
 
 __all__ = ["build_objective"]
