@@ -12,7 +12,7 @@ from typing import Any, Callable
 import optuna
 import torch
 
-from resdag import ESNModel
+from resdag.composition import ESNModel
 from resdag.training import ESNTrainer
 
 from .losses import LossProtocol

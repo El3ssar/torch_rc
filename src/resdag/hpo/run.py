@@ -11,7 +11,7 @@ from typing import Any, Callable
 import optuna
 from optuna.samplers import TPESampler
 
-from resdag import ESNModel
+from resdag.composition import ESNModel
 
 from .losses import LossProtocol, get_loss
 from .objective import build_objective
