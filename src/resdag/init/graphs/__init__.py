@@ -29,6 +29,7 @@ from .ring_chord import ring_chord_graph
 from .simple_cycle_jumps import simple_cycle_jumps_graph
 from .spectral_cascade import spectral_cascade_graph
 from .watts_strogatz import watts_strogatz_graph
+from .zero import zero_graph
 
 __all__ = [
     "barabasi_albert_graph",
@@ -48,4 +49,5 @@ __all__ = [
     "simple_cycle_jumps_graph",
     "spectral_cascade_graph",
     "watts_strogatz_graph",
+    "zero_graph",
 ]

@@ -33,6 +33,8 @@ ChainOfNeuronsInputInitializer
     Specific to chain-of-neurons topology.
 RingWindowInputInitializer
     Windowed inputs on ring topology.
+ZeroInitializer
+    Sets all weights to zero.
 
 Functions
 ---------
@@ -85,6 +87,7 @@ from .registry import (
     show_input_initializers,
 )
 from .ring_window import RingWindowInputInitializer
+from .zero import ZeroInitializer
 
 __all__ = [
     "BinaryBalancedInitializer",
@@ -98,6 +101,7 @@ __all__ = [
     "RandomBinaryInitializer",
     "RandomInputInitializer",
     "RingWindowInputInitializer",
+    "ZeroInitializer",
     # Registry functions
     "register_input_feedback",
     "get_input_feedback",
